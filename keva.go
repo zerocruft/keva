@@ -1,24 +1,18 @@
 package keva
 
 import (
-	"io/ioutil"
 	"strings"
 )
 
-func Open(fileName string) (returnMap map[string]string, err error) {
-	fileBytes, err := ioutil.ReadFile(fileName)
-	if err != nil {
-		err = kevaError{}
-		return
-	}
-	fileContent := string(fileBytes)
-	returnMap = parseKevaContent(fileContent)
+func Parse(fileContent string, sep string) (returnMap map[string]string, err error) {
+
+	returnMap = parseKevaContent(fileContent, sep)
 
 	return
 
 }
 
-func parseKevaContent(content string) (kevaMap map[string]string) {
+func parseKevaContent(content, sep string) (kevaMap map[string]string) {
 	kevaMap = map[string]string{}
 
 	cut := ""
@@ -32,11 +26,29 @@ func parseKevaContent(content string) (kevaMap map[string]string) {
 
 	lines := strings.Split(content, cut)
 	for _, line := range lines {
-		if strings.Contains(line, "=") {
-			splitAt := strings.Index(line, "=")
-			kevaMap[line[:splitAt]] = line[splitAt + 1:]
+		if strings.Contains(line, sep) {
+			splitAt := strings.Index(line, sep)
+			kevaMap[trimAndClean(line[:splitAt])] = trimAndClean(line[splitAt + 1:])
 		}
 	}
 
 	return
+}
+
+func trimAndClean(value string) string {
+
+	value = strings.Trim(value, "\n")
+	value = strings.Trim(value, "\r")
+	value = strings.Trim(value, "\r\n")
+	value = strings.Trim(value, " ")
+
+	if strings.HasPrefix(value, "\"") {
+		if strings.HasSuffix(value, "\"") {
+			value = strings.TrimLeft(value, "\"")
+			value = strings.TrimRight(value, "\"")
+		}
+	}
+	value = strings.Trim(value, " ")
+
+	return value
 }
