@@ -61,6 +61,3 @@ fabric.properties
 
 .gitignore
 .idea/
-keva.go
-keva/
-keva_error.go
